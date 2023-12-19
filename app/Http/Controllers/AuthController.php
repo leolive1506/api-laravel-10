@@ -13,11 +13,12 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('email', 'password'))) {
+            $abilities = ['invoice-store', 'invoice-update'];
             return $this->response(
                 'Authorizaed',
                 200,
                 [
-                    'token' => $request->user()->createToken('invoice')->plainTextToken
+                    'token' => $request->user()->createToken('invoice', $abilities)->plainTextToken
                 ]
             );
         }
@@ -25,8 +26,9 @@ class AuthController extends Controller
         return $this->response('Not Authorized', 403);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-
+        $request->user()->currentAccessToken()->delete();
+        return $this->response('Token revoked', 200);
     }
 }

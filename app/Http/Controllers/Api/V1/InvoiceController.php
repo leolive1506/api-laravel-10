@@ -15,7 +15,7 @@ class InvoiceController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:sanctum')->only(['store', 'update', 'destroy']);
+        $this->middleware(['auth:sanctum', 'ability:invoice-store,invoice-update,invoice-destroy'])->only(['store', 'update', 'destroy']);
     }
     /**
      * Display a listing of the resource.
@@ -33,6 +33,10 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
+        if (!auth()->user()->tokenCan('invoice-store')) {
+            return $this->error('Unauthorized', 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'type' => 'required|max:1',
@@ -100,6 +104,10 @@ class InvoiceController extends Controller
      */
     public function destroy(Invoice $invoice)
     {
+        if (!auth()->user()->tokenCan('invoice-destoy')) {
+            return $this->error('Unauthorized', 403);
+        }
+
         $deleted = $invoice->delete();
         if ($deleted) {
             return $this->response('Invoice deleted', 200);
